@@ -1,4 +1,21 @@
 import time
+import app.models as models
+import pytest
+
+
+@pytest.fixture
+def create_user(db_session):
+    user1 = models.User(first_name="John", last_name="Doe", address="123 Farmville")
+    db_session.add(user1)
+    db_session.commit()
+    db_session.refresh(user1)
+
+    user2 = models.User(first_name="Jane", last_name="Doe", address="321 Farmville")
+    db_session.add(user2)
+    db_session.commit()
+    db_session.refresh(user2)
+
+    yield user1, user2
 
 
 def test_root(test_client):
@@ -7,7 +24,17 @@ def test_root(test_client):
     assert response.json() == {"message": "The API is LIVE!!"}
 
 
-def test_create_get_user(test_client, user_payload):
+def test_create_get_user(test_client, user_payload, create_user):
+    # Create a user from a feature
+    user1, user2 = create_user
+    response = test_client.get(f"/api/users")
+    assert response.status_code == 200
+    response_json = response.json()
+    assert response_json["status"] == "Success"
+    assert response_json["results"] == 2
+    assert response_json["users"][0]["first_name"] == user1.first_name
+    assert response_json["users"][1]["first_name"] == user2.first_name
+
     response = test_client.post("/api/users/", json=user_payload)
     response_json = response.json()
     assert response.status_code == 201
@@ -21,6 +48,13 @@ def test_create_get_user(test_client, user_payload):
     assert response_json["User"]["address"] == "123 Farmville"
     assert response_json["User"]["first_name"] == "John"
     assert response_json["User"]["last_name"] == "Doe"
+
+    # Fetch all users
+    response = test_client.get(f"/api/users")
+    assert response.status_code == 200
+    response_json = response.json()
+    assert response_json["status"] == "Success"
+    assert response_json["results"] == 3
 
 
 def test_create_update_user(test_client, user_payload, user_payload_updated):

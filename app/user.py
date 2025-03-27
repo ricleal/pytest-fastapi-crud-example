@@ -1,11 +1,17 @@
-import app.schemas as schemas, app.models as models
-from sqlalchemy.orm import Session
+import logging
+from venv import logger
+
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.exc import IntegrityError
-from pydantic import ValidationError
-from fastapi import Depends, HTTPException, status, APIRouter
+from sqlalchemy.orm import Session
+
+import app.models as models
+import app.schemas as schemas
 from app.database import get_db
 
 router = APIRouter()
+
+logger = logging.getLogger(__name__)
 
 
 @router.post(
@@ -14,12 +20,13 @@ router = APIRouter()
 def create_user(payload: schemas.UserBaseSchema, db: Session = Depends(get_db)):
     try:
         # Create a new user instance from the payload
-        new_user = models.User(**payload.dict())
+        new_user = models.User(**payload.model_dump())
         db.add(new_user)
         db.commit()
         db.refresh(new_user)
 
     except IntegrityError as e:
+        logger.exception("Integrity error occurred while creating user: %s", e)
         db.rollback()
         # Log the error or handle it as needed
         raise HTTPException(
@@ -27,6 +34,7 @@ def create_user(payload: schemas.UserBaseSchema, db: Session = Depends(get_db)):
             detail="A user with the given details already exists.",
         ) from e
     except Exception as e:
+        logger.exception("Unexpected error occurred while creating user: %s", e)
         db.rollback()
         # Handle other types of database errors
         raise HTTPException(
@@ -133,17 +141,24 @@ def delete_user(userId: str, db: Session = Depends(get_db)):
     "/", status_code=status.HTTP_200_OK, response_model=schemas.ListUserResponse
 )
 def get_users(
-    db: Session = Depends(get_db), limit: int = 10, page: int = 1, search: str = ""
+    db: Session = Depends(get_db),
+    limit: int = 10,
+    page: int = 1,
+    first_name: str = None,
+    last_name: str = None,
+    email: str = None,
 ):
     skip = (page - 1) * limit
 
-    users = (
-        db.query(models.User)
-        .filter(models.User.first_name.contains(search))
-        .limit(limit)
-        .offset(skip)
-        .all()
-    )
+    conditions = []
+    if first_name:
+        conditions.append(models.User.first_name.contains(first_name))
+    if last_name:
+        conditions.append(models.User.last_name.contains(last_name))
+    if email:
+        conditions.append(models.User.email.contains(email))
+
+    users = db.query(models.User).filter(*conditions).limit(limit).offset(skip).all()
     return schemas.ListUserResponse(
         status=schemas.Status.Success, results=len(users), users=users
     )

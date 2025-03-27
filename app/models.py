@@ -1,8 +1,11 @@
-from app.database import Base
-from sqlalchemy import TIMESTAMP, Column, String, Boolean, Index
+import uuid
+
+from sqlalchemy import TIMESTAMP, Boolean, Column, String
 from sqlalchemy.sql import func
 from sqlalchemy_utils import UUIDType
-import uuid
+
+from app.database import Base
+
 
 class User(Base):
     __tablename__ = "users"
@@ -14,10 +17,18 @@ class User(Base):
     first_name = Column(
         String(255), nullable=False, index=True
     )  # Indexed for faster searches
+
     last_name = Column(
         String(255), nullable=False, index=True
     )  # Indexed for faster searches
+
     address = Column(String(255), nullable=True)
+
+    # Email with unique constraint and non-null
+    email = Column(String(255), nullable=False, unique=True, index=True)
+
+    # role
+    role = Column(String(255), nullable=False)
 
     # Boolean type with a default value
     activated = Column(Boolean, nullable=False, default=True)

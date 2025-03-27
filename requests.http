@@ -1,0 +1,131 @@
+###
+
+GET http://localhost:8000/api/healthchecker
+
+###
+
+@server = localhost:8000
+
+POST http://{{server}}/api/users 
+Content-Type: application/json
+
+{
+    "first_name": "John",
+    "last_name": "Doe",
+    "address": "1234 Main St",
+    "email": "john.doe@example.com",
+    "role": "admin"
+}
+
+###
+
+POST http://{{server}}/api/users 
+Content-Type: application/json
+
+{
+    "first_name": "John",
+    "last_name": "Dane",
+    "address": "123 Main St",
+    "email": "john.dane@example.com",
+    "role": "user"
+}
+
+###
+
+POST http://{{server}}/api/users 
+Content-Type: application/json
+
+{
+    "first_name": "Ricardo",
+    "last_name": "created manually",
+    "address": "123 Main St",
+    "email": "ricardo@trustle.com",
+    "role": "admin"
+}
+
+###
+
+GET http://{{server}}/api/users
+
+###
+
+GET http://{{server}}/api/users/4af61cdc-59de-4871-a51c-bb2fec42b947
+
+###
+GET http://{{server}}/api/users?email=john.doe@example.com
+
+
+### Google
+
+# Client id from Google Developer console
+# Client Secret from Google Developer console
+# Scope this is a space separated list of the scopes of access you are requesting.
+
+# Scopes
+# email	See your primary Google Account email address
+# openid	Associate you with your personal info on Google
+# profile	See your personal info, including any personal info you've made publicly available
+
+# Authorization link.  Place this in a browser and copy the code that is returned after you accept the scopes.
+
+# GET https://accounts.google.com/o/oauth2/auth?client_id=169682767787-ec28rqcm2mq0cl8noqsv7kmsiqq0qva8.apps.googleusercontent.com&redirect_uri=http://127.0.0.1:8000&scope=email%20profile&response_type=code
+
+# GOT: http://127.0.0.1:8000/?code=xxxxxxxxw&scope=openid&authuser=0&prompt=consent
+
+# Exchange Authorization code for an access token and a refresh token.
+
+POST https://accounts.google.com/o/oauth2/token
+Content-Type: application/x-www-form-urlencoded
+
+code=xxxx&client_id=169682767787-ec28rqcm2mq0cl8noqsv7kmsiqq0qva8.apps.googleusercontent.com&client_secret=xxxxx&redirect_uri=http://127.0.0.1:8000&grant_type=authorization_code
+
+# Note this id_oken (jwt) has the email!!!
+# {
+#   "access_token": "xxx",
+#   "expires_in": 3599,
+#   "refresh_token": "xxx",
+#   "scope": "https://www.googleapis.com/auth/userinfo.email openid",
+#   "token_type": "Bearer",
+#   "id_token": "xxx"
+# }
+
+# {'at_hash': 'nevNsSEVoagZcVE4fNT55Q',
+#  'aud': '169682767787-ec28rqcm2mq0cl8noqsv7kmsiqq0qva8.apps.googleusercontent.com',
+#  'azp': '169682767787-ec28rqcm2mq0cl8noqsv7kmsiqq0qva8.apps.googleusercontent.com',
+#  'email': 'ricardo@trustle.com',
+#  'email_verified': True,
+#  'exp': 1743036594,
+#  'hd': 'trustle.com',
+#  'iat': 1743032994,
+#  'iss': 'accounts.google.com',
+#  'sub': '117019040038746220281'}
+###
+
+# Exchange a refresh token for a new access token.
+
+POST https://accounts.google.com/o/oauth2/token
+Content-Type: application/x-www-form-urlencoded
+
+client_id=169682767787-ec28rqcm2mq0cl8noqsv7kmsiqq0qva8.apps.googleusercontent.com&client_secret=xxxxxx&refresh_token=1%2F%2F054WjocsaPjy0CgYIARAAGAUSNwF-L9IrDN5cU4_WJ8kQRcElLrxFzhRi-6BK0BpagkgCGroKtBelUhtZemJgzmAahHw1L5kNyC0&grant_type=refresh_token
+
+
+# {
+#   "access_token": "ya29.a0AeXRPp5mAVPkCnrMF_OF3w2DG7-EnaCwSquB0eOEUfRjIeFBthyGuZPG1aGNmKJ6O8sSVo6gxaZBYNPcqCdLOC09UIvZeu6k4wFW2qtgq814vkfqOD83HKnNzjI0WGE3W-iACh_nKqAKCDoRYyL0Y_2ifPH9tX-GwwpxoCw-aCgYKAQ4SARMSFQHGX2MinKFgoCWQrUBjsfP5gt5FLw0175",
+#   "expires_in": 3599,
+#   "scope": "https://www.googleapis.com/auth/userinfo.profile",
+#   "token_type": "Bearer",
+#   "id_token": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjgyMWYzYmM2NmYwNzUxZjc4NDA2MDY3OTliMWFkZjllOWZiNjBkZmIiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJhY2NvdW50cy5nb29nbGUuY29tIiwiYXpwIjoiMTY5NjgyNzY3Nzg3LWVjMjhycWNtMm1xMGNsOG5vcXN2N2ttc2lxcTBxdmE4LmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tIiwiYXVkIjoiMTY5NjgyNzY3Nzg3LWVjMjhycWNtMm1xMGNsOG5vcXN2N2ttc2lxcTBxdmE4LmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tIiwic3ViIjoiMTE3MDE5MDQwMDM4NzQ2MjIwMjgxIiwiYXRfaGFzaCI6InNQVW53djQ0NWRhTHFQbUJObDRvUXciLCJpYXQiOjE3NDMwMjMxNTYsImV4cCI6MTc0MzAyNjc1Nn0.QSQVxlCMIoNHUlVmGHFGhDF7YXU9wEa76yW1r996GDPWF4BKSMrsetihiuHp-bX-uNBnTrxWPgKXPr27bJe5j7oqQAE93ZnDgTYRkhcMeagBP-zNSOCx35QuW5ThzAD73ZcYgBqSpeDma4r0l9UHXllWmdBrKdC_7KmeCufJ2JjNmLCqDViaz7RYjiiWs9NFp_AI9RdqUHSu5GVP5iMVbkWXCWC85GAF_ke2Y5ZR8Ym8irrMqblbGSY5b3CCpIEgqfqacJVEMkF8ErPOOtMNGU8987QEep4sLDb7ZyVhVgFEyV6IRIP--GPK5vcZrj9k0GMd0BfpUuC12rnEaSAsYg"
+# }
+
+###
+GET https://www.googleapis.com/oauth2/v1/userinfo?alt=json
+Authorization: Bearer ya29.a0AeXRPp52qJk4Lk1MwazJ6TObRoV0_Rw2PStSycUK7trd2w1fft8K4Hp31IS6spTzaISMkGRscgSfeTNldjk3L2ot_9iYEFBRFTPqSeYycdrGs2bI7whgiKjnkIUmvR-XbHqUbma4O0O9s95lBNLb7kTGbdi1tKhx3xfA43E-aCgYKAWASARMSFQHGX2MiL4A6e6k-4PLVFQsXeHQeqQ0175
+
+###
+
+POST http://{{server}}/api/auth/auth/google
+Content-Type: application/json
+
+{
+  "id_token": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjgyMWYzYmM2NmYwNzUxZjc4NDA2MDY3OTliMWFkZjllOWZiNjBkZmIiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJhY2NvdW50cy5nb29nbGUuY29tIiwiYXpwIjoiMTY5NjgyNzY3Nzg3LWVjMjhycWNtMm1xMGNsOG5vcXN2N2ttc2lxcTBxdmE4LmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tIiwiYXVkIjoiMTY5NjgyNzY3Nzg3LWVjMjhycWNtMm1xMGNsOG5vcXN2N2ttc2lxcTBxdmE4LmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tIiwic3ViIjoiMTE3MDE5MDQwMDM4NzQ2MjIwMjgxIiwiaGQiOiJ0cnVzdGxlLmNvbSIsImVtYWlsIjoicmljYXJkb0B0cnVzdGxlLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJhdF9oYXNoIjoiWDRJdnBUSXdoTWdkQzBVOFhDcnBCQSIsImlhdCI6MTc0MzAzNDk5NSwiZXhwIjoxNzQzMDM4NTk1fQ.TdczZg6sr93_Tqg9JQW8lP-FLgOB1seUuEwgPIRLSadEVtbBtIQ5q0q__9aypFpOw13Yx27RRRsWZnZRVTQ6leuWX00y48xs8XZi2HRv8ouT60xVGDFSeAslEARSt2MMwexPS0CZwGc3xMwSIpQD85eOPO5_bsvlAQmO1Cxlg9u06y103WJzbIIbOCG4w-Ui925PcJiz3F3Wc1HAMZ46yiqaV3uOQtISEr_MVLJMibQqvFx9xdUipCDQU9WthmBMIlSQysMgdYTyryxsxFNjFRMRFlZXQdVULRdQhbi3X_mDlqNGYWQj1da-zJJvMMc33y9DkCMZTjUVRs3KGh36zg"
+}

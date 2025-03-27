@@ -1,18 +1,21 @@
-from enum import Enum
 from datetime import datetime
+from enum import Enum
 from typing import List
+from uuid import UUID
+
 from pydantic import BaseModel, Field
-from uuid import uuid4, UUID
 
 
 class UserBaseSchema(BaseModel):
 
     id: UUID | None = None
     first_name: str = Field(
-        ..., description="The first name of the user", example="John"
+        None, description="The first name of the user", example="John"
     )
-    last_name: str = Field(..., description="The last name of the user", example="Doe")
+    last_name: str = Field(None, description="The last name of the user", example="Doe")
     address: str | None = None
+    email: str = Field(None, description="User email")
+    role: str = Field(None, description="The role of the user", example="admin")
     activated: bool = False
     createdAt: datetime | None = None
     updatedAt: datetime | None = None
@@ -47,3 +50,8 @@ class ListUserResponse(BaseModel):
 class DeleteUserResponse(BaseModel):
     Status: Status
     Message: str
+    Message: str
+
+
+class AuthResponse(BaseModel):
+    id_token: str

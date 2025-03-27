@@ -7,27 +7,59 @@ from sqlalchemy.pool import StaticPool
 from fastapi.testclient import TestClient
 from app.main import app
 from app.database import Base, get_db
+from sqlalchemy_utils import database_exists, create_database
 
-# SQLite database URL for testing
-SQLITE_DATABASE_URL = "sqlite:///./test_db.db"
-
-# Create a SQLAlchemy engine
-engine = create_engine(
-    SQLITE_DATABASE_URL,
-    connect_args={"check_same_thread": False},
-    poolclass=StaticPool,
+SQLALCHEMY_DATABASE_URL = (
+    "postgresql://trustle:trustle@localhost:5432/trustletest?sslmode=disable"
 )
 
-# Create a sessionmaker to manage sessions
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# engine = create_engine(
+#     SQLALCHEMY_DATABASE_URL,
+#     poolclass=StaticPool,
+# )
+# TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Create tables in the database
-Base.metadata.create_all(bind=engine)
+# Base.metadata.create_all(bind=engine)
+
+
+# def override_get_db():
+#     try:
+#         db = TestingSessionLocal()
+#         yield db
+#     finally:
+#         db.close()
+
+
+# app.dependency_overrides[get_db] = override_get_db
+
+# client = TestClient(app)
+
+
+# @pytest.fixture(scope="session")
+# def test_client():
+#     return client
+
+
+# conftest.py
+
+
+@pytest.fixture(scope="session")
+def db_engine():
+    engine = create_engine(
+        SQLALCHEMY_DATABASE_URL,
+        poolclass=StaticPool,
+    )
+    if not database_exists:
+        create_database(engine.url)
+    TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    Base.metadata.create_all(bind=engine)
+    yield engine, TestingSessionLocal
 
 
 @pytest.fixture(scope="function")
-def db_session():
+def db_session(db_engine):
     """Create a new database session with a rollback at the end of the test."""
+    engine, TestingSessionLocal = db_engine
     connection = engine.connect()
     transaction = connection.begin()
     session = TestingSessionLocal(bind=connection)
